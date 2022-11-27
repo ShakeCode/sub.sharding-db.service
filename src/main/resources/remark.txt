@@ -1,0 +1,19 @@
+
+### 解决占用问题
+
+1、查找端口占用的进程ID
+netstat -ano | findstr 8039
+
+TCP    0.0.0.0:8059           0.0.0.0:0              LISTENING       27656
+TCP    [::]:8059              [::]:0                 LISTENING       27656
+TCP    [::1]:63153            [::1]:8059             TIME_WAIT       0
+
+
+C:\Users\90393>taskkill /f /pid  27656
+成功: 已终止 PID 为 27656 的进程。
+
+2、查找进程ID 对应的程序
+tasklist | findstr 1124
+
+3、终止运行的程序
+taskkill /f /t  /im java.exe

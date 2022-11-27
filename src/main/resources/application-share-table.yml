@@ -1,0 +1,101 @@
+### 分表配置
+
+server:
+  context-path: /data
+  port: 8059
+  #证书的路径.
+  ssl:
+    #是否开启https
+    enabled: false
+    key-store: classpath:keystore.p12
+    #证书密码，请修改为您自己证书的密码.
+    key-store-password: 475996
+    #秘钥库类型(PKCS12,JKS)
+    key-store-type: PKCS12
+    #证书别名
+    key-alias: tomcat
+
+
+spring:
+  application:
+    name: data.center.service
+  main:
+    allow-bean-definition-overriding: true
+    allow-circular-references: true
+  shardingsphere:
+    datasource:
+      names: db1
+      db1:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        url: jdbc:mysql://127.0.0.1:5306/sharding-jdbc-db?autoReconnect=true&useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC&useSSL=false&connectTimeout=1000&socketTimeout=3000
+        username: root
+        password: root
+    sharding:
+      tables:
+        order:
+          actual-data-nodes: db1.order_$->{1..2}
+          key-generator:
+            #唯一key取字段
+            column: order_id
+            #雪花算法
+            type: SNOWFLAKE
+          # 分表策略
+          table-strategy:
+            inline:
+              sharding-column: order_id
+              algorithm-expression: order_$->{order_id % 2 + 1}
+    props:
+      sql:
+        show: true
+
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+0
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    virtual-host: /
+    username: guest
+    password: guest
+    listener:
+      simple:
+        # 消息握手方式
+        acknowledge-mode: manual
+        # 每次队列获取消息数量
+        prefetch: 250
+        # 开启批量消费
+        consumer-batch-enabled: true
+        # 每次批量消费大小
+        batch-size: 16
+
+# 整合mybatis的配置
+mybatis:
+  #mybatis xml存放路径
+  mapper-locations: classpath*:mapper/*.xml
+  map-underscore-to-camel-case: true
+  #mybatis 实体类包路径
+  type-aliases-package: com.test.model,com.test.entity
+
+#pagehelper分页插件
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    #日志级别
+    root: info
+    com.data.dao: debug
+  file:
+    logName: ${spring.application.name}-log
+    max-history: 10
+    max-size: 1KB
+
+# 允许重复依赖注入覆盖
+spring.main.allow-bean-definition-overriding: true
+

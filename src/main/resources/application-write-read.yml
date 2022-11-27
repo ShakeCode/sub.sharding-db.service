@@ -1,0 +1,122 @@
+### 读写分离配置
+
+server:
+  context-path: /data
+  port: 8059
+  #证书的路径.
+  ssl:
+    #是否开启https
+    enabled: false
+    key-store: classpath:keystore.p12
+    #证书密码，请修改为您自己证书的密码.
+    key-store-password: 475996
+    #秘钥库类型(PKCS12,JKS)
+    key-store-type: PKCS12
+    #证书别名
+    key-alias: tomcat
+
+
+spring:
+  application:
+    name: data.center.service
+  main:
+    allow-bean-definition-overriding: true
+    allow-circular-references: true
+  shardingsphere:
+    datasource:
+      ds:
+        maxPoolSize: 100
+      # master-ds1数据库连接信息
+      ds1:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        maxPoolSize: 100
+        minPoolSize: 5
+        username: root
+        password: root
+        type: com.alibaba.druid.pool.DruidDataSource
+        url: jdbc:mysql://localhost:5306/sharding-jdbc-db?autoReconnect=true&useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC&useSSL=false&connectTimeout=1000&socketTimeout=3000
+      # slave-ds2数据库连接信息
+      ds2:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        maxPoolSize: 100
+        minPoolSize: 5
+        username: root
+        password: root
+        type: com.alibaba.druid.pool.DruidDataSource
+        url: jdbc:mysql://localhost:5306/sharding-jdbc-db?autoReconnect=true&useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC&useSSL=false&connectTimeout=1000&socketTimeout=3000
+      # slave-ds3数据库连接信息
+      ds3:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        minPoolSize: 5
+        username: root
+        password: root
+        type: com.alibaba.druid.pool.DruidDataSource
+        url: jdbc:mysql://localhost:5306/sharding-jdbc-db?autoReconnect=true&useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC&useSSL=false&connectTimeout=1000&socketTimeout=3000
+      # 配置数据源
+      names: ds1,ds2,ds3
+    masterslave:
+      # 配置slave节点的负载均衡均衡策略,采用轮询机制
+      load-balance-algorithm-type: round_robin
+      # 配置主库master,负责数据的写入
+      master-data-source-name: ds1
+      # 配置主从名称
+      name: ms
+      # 配置从库slave节点
+      slave-data-source-names: ds2,ds3
+    # 显示sql
+    props:
+      sql:
+        show: true
+    # 配置默认数据源ds1 默认数据源,主要用于写
+    sharding:
+      default-data-source-name: ds1
+
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+0
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    virtual-host: /
+    username: guest
+    password: guest
+    listener:
+      simple:
+        # 消息握手方式
+        acknowledge-mode: manual
+        # 每次队列获取消息数量
+        prefetch: 250
+        # 开启批量消费
+        consumer-batch-enabled: true
+        # 每次批量消费大小
+        batch-size: 16
+
+# 整合mybatis的配置
+mybatis:
+  #mybatis xml存放路径
+  mapper-locations: classpath*:mapper/*.xml
+  #mybatis 实体类包路径
+  type-aliases-package: com.test.model,com.test.entity
+
+#pagehelper分页插件
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    #日志级别
+    root: info
+    com.data.dao: debug
+  file:
+    logName: ${spring.application.name}-log
+    max-history: 10
+    max-size: 1KB
+
+# 允许重复依赖注入覆盖
+spring.main.allow-bean-definition-overriding: true
+

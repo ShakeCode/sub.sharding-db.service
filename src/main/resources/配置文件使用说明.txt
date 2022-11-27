@@ -1,0 +1,20 @@
+1. 分库分表使用
+application-share-db.yml
+
+OrderController:
+{{local}}:8059/v1/order/saveFk
+{{local}}:8059/v1/order/findFk
+
+
+2. 单库只分表读写
+application-share-table.yml
+
+OrderController:
+{{local}}:8059/v1/order/save
+{{local}}:8059/v1/order/find
+
+3. 读写分离
+application-write-read.yml
+UserController:
+v1/user/save
+v1/user/findUsers
